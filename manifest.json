@@ -1,7 +1,7 @@
 {
   "name": "plantuml-diagrams",
   "title": "PlantUML",
-  "description": "Draw PlantUML diagrams in issues, comments and Knowledge Base articles. Insert a PlantUML block from the editor toolbar and type the diagram source. The diagram is rendered in your browser: the source is not sent to a server. C4 diagrams are supported. In projects that the app is attached to, ```plantuml code blocks are replaced with diagrams when the text is saved.",
+  "description": "Draw PlantUML diagrams in issues, comments and Knowledge Base articles. Insert a PlantUML block from the editor toolbar and type the diagram source. The diagram is rendered in your browser: the source is not sent to a server. C4 diagrams are supported. When you attach the app to a project, the app edits the issues and articles of that project: it replaces ```plantuml code blocks with diagrams, also in old items, on behalf of the user who opens the item. Detach the app to stop these changes.",
   "version": "0.5.0",
   "$schema": "https://json.schemastore.org/youtrack-app.json",
   "vendor": {
@@ -29,7 +29,7 @@
       "indexPath": "plantuml-blocks/index.html",
       "extensionPoint": "ISSUE_BELOW_SUMMARY",
       "iconPath": "plantuml-blocks/widget-icon.svg",
-      "description": "Replaces ```plantuml code blocks with PlantUML diagrams when the text is saved.",
+      "description": "Replaces ```plantuml code blocks in the description or content with PlantUML diagrams, on behalf of the user who opens the item.",
       "permissions": [
         "UPDATE_ISSUE"
       ],
@@ -41,7 +41,7 @@
       "indexPath": "plantuml-blocks/index.html",
       "extensionPoint": "ARTICLE_BELOW_SUMMARY",
       "iconPath": "plantuml-blocks/widget-icon.svg",
-      "description": "Replaces ```plantuml code blocks with PlantUML diagrams when the text is saved.",
+      "description": "Replaces ```plantuml code blocks in the description or content with PlantUML diagrams, on behalf of the user who opens the item.",
       "permissions": [
         "UPDATE_ARTICLE"
       ],

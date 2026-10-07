@@ -40,11 +40,34 @@ Rel(user, widget, "Edits diagram")
 
 ### Code blocks (optional)
 
-The app can also replace ` ```plantuml ` code blocks with diagrams, as in GitLab. This works only
-in projects that the app is attached to. To use it, attach the app to the project
-(**Administration → Apps → PlantUML → Projects**).
+The app can also replace ` ```plantuml ` code blocks with diagrams, as in GitLab.
 
-1. Write the diagram in a code block:
+#### What the app changes
+
+- **Without project attachment**, the app changes nothing. Only users insert diagrams.
+- **When the app is attached to a project**, the app edits the issues and articles of that
+  project:
+  - The app replaces each ` ```plantuml ` code block in the description of an issue or in the
+    content of an article with a diagram widget. The widget keeps the source of the block.
+  - The app makes this change when a user who can edit the item opens it. The change is made on
+    behalf of that user. The activity stream shows it as a change of the description, and
+    watchers can get a notification.
+  - The app also changes **old** items. An issue that contains a ` ```plantuml ` block from the
+    past changes when a user who can edit it opens it next time.
+  - The app also replaces a ` ```plantuml ` block that is an example of code and not a diagram.
+    To keep such a block as code, use a different language name, for example ` ```text `, or
+    put the block inside another code block.
+  - The app does not change comments.
+- **To stop the changes**, detach the app from the project. Diagrams that are already in the
+  text continue to work.
+
+Before you attach the app to a project, make sure that the project has no ` ```plantuml `
+blocks that must stay as code.
+
+#### Use
+
+1. Attach the app to the project (**Administration → Apps → PlantUML → Projects**).
+2. Write the diagram in a code block:
 
    ````
    ```plantuml
@@ -52,12 +75,12 @@ in projects that the app is attached to. To use it, attach the app to the projec
    ```
    ````
 
-2. Save the text. After a few seconds, the code block becomes a diagram widget. The block height
+3. Save the text. After a few seconds, the code block becomes a diagram widget. The block height
    fits the diagram.
-3. To change the diagram, use **Edit** on the diagram.
+4. To change the diagram, use **Edit** on the diagram.
 
 A panel below the summary shows the result. Only users who can edit the issue or article see it.
-The conversion runs in the browser of the user who saved the text.
+The conversion runs in the browser of the user who opens the item.
 
 ## Limits
 
