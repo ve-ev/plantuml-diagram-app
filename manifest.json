@@ -1,0 +1,27 @@
+{
+  "name": "plantuml-diagrams",
+  "title": "PlantUML",
+  "description": "Draw PlantUML diagrams in issues, comments and Knowledge Base articles. Insert a PlantUML block from the editor toolbar and type the diagram source. The diagram is rendered in your browser: the source is not sent to a server. C4 diagrams are supported.",
+  "version": "0.3.1",
+  "$schema": "https://json.schemastore.org/youtrack-app.json",
+  "vendor": {
+    "name": "ve-ev"
+  },
+  "icon": "icon.svg",
+  "widgets": [
+    {
+      "key": "plantuml-app",
+      "name": "PlantUML",
+      "indexPath": "plantuml-app/index.html",
+      "extensionPoint": "MARKDOWN",
+      "description": "PlantUML diagram rendered in the browser",
+      "iconPath": "plantuml-app/widget-icon.svg",
+      "borderless": true,
+      "defaultDimensions": {
+        "width": "100%",
+        "height": "400px"
+      },
+      "settingsSchemaPath": "plantuml-app/settings.json"
+    }
+  ]
+}

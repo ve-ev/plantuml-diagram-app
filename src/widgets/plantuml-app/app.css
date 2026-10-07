@@ -1,0 +1,66 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: transparent;
+  font-family: var(--ring-font-family);
+  font-size: var(--ring-font-size);
+  line-height: var(--ring-line-height);
+  color: var(--ring-text-color);
+}
+
+/* The embed box sets the size; the diagram scales down to fit it. */
+.view {
+  position: relative;
+  height: 100vh;
+}
+
+.diagram {
+  display: block;
+  max-width: 100%;
+  max-height: 100vh;
+}
+
+/* Shown on hover only, so readers see a plain diagram. */
+.view .edit {
+  position: absolute;
+  top: var(--ring-unit);
+  right: var(--ring-unit);
+  opacity: 0;
+}
+
+.view:hover .edit,
+.view .edit:focus-visible {
+  opacity: 1;
+}
+
+.diagram-error {
+  margin: 0;
+  padding: var(--ring-unit) calc(var(--ring-unit) * 1.5);
+  border-left: 2px solid var(--ring-error-color);
+  color: var(--ring-secondary-color);
+  font-size: var(--ring-font-size-smaller);
+  white-space: pre-wrap;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ring-unit) * 2);
+  padding: calc(var(--ring-unit) * 2);
+}
+
+.editor-source textarea {
+  font-family: var(--ring-font-family-monospace);
+}
+
+.editor-preview {
+  min-height: calc(var(--ring-unit) * 8);
+  overflow: auto;
+}
+
+.editor-preview .diagram {
+  max-height: none;
+}
