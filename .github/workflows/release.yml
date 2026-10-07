@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version as major.minor.patch. Leave empty to bump the patch.'
-        required: false
+        description: 'Version as major.minor.patch. It must already be in package.json and manifest.json on main.'
+        required: true
         type: string
       notes:
         description: "What's new in this release"
@@ -28,29 +28,25 @@ jobs:
       # Install from the lockfile: plain install can lose Rollup's platform binary.
       - run: npm ci --no-audit --no-fund
 
-      - name: Set the version
+      # main accepts changes only through pull requests, so the version is set in a pull request
+      # before the release. This step only checks it.
+      - name: Check the version
         id: version
         env:
-          INPUT_VERSION: ${{ inputs.version }}
+          VERSION: ${{ inputs.version }}
         run: |
           set -e
-          if [ -n "$INPUT_VERSION" ]; then
-            if ! [[ "$INPUT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "Version must be major.minor.patch, got '$INPUT_VERSION'" >&2
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Version must be major.minor.patch, got '$VERSION'" >&2
+            exit 1
+          fi
+          for file in package.json manifest.json; do
+            actual=$(node -p "require('./$file').version")
+            if [ "$actual" != "$VERSION" ]; then
+              echo "$file has version $actual, not $VERSION. Change it in a pull request first." >&2
               exit 1
             fi
-            npm version "$INPUT_VERSION" --no-git-tag-version --allow-same-version >/dev/null
-          else
-            npm version patch --no-git-tag-version >/dev/null
-          fi
-          VERSION=$(node -p "require('./package.json').version")
-          # Marketplace displays manifest.json's version, so synchronize it.
-          node -e "
-            const fs = require('fs');
-            const m = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
-            m.version = process.argv[1];
-            fs.writeFileSync('manifest.json', JSON.stringify(m, null, 2) + '\\n');
-          " "$VERSION"
+          done
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - run: npm run lint
@@ -65,16 +61,12 @@ jobs:
           mv app.zip "app-$VERSION.zip"
           unzip -Z1 "app-$VERSION.zip" | grep -Fxq 'manifest.json'
 
-      - name: Commit and tag
+      - name: Tag
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git commit -am "Release $VERSION" || echo 'Version unchanged, tagging the current commit'
           git tag "release-$VERSION"
-          # --follow-tags skips lightweight tags, so push this tag explicitly.
-          git push origin HEAD "release-$VERSION"
+          git push origin "release-$VERSION"
 
       - name: Publish the release
         env:

@@ -129,9 +129,10 @@ Or run `npm run pack` and import `app.zip` on the **Administration → Apps** pa
 
 GitHub Actions makes releases. Both workflows run only by hand (**Actions → workflow → Run workflow**).
 
-- **Release** (`.github/workflows/release.yml`): sets the version in `package.json` and
-  `manifest.json`, runs lint, tests and the build, commits the version, adds the tag
-  `release-<version>`, and attaches `app-<version>.zip` to a GitHub release.
+- **Release** (`.github/workflows/release.yml`): checks that `package.json` and `manifest.json`
+  have the given version, runs lint, tests and the build, adds the tag `release-<version>` to the
+  current commit of `main`, and attaches `app-<version>.zip` to a GitHub release. Change the
+  version and `changeNotes` in a pull request before the release.
 
   ```bash
   gh workflow run release.yml -f version=1.0.1 -f notes="- What changed."
