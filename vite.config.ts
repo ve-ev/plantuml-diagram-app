@@ -34,6 +34,11 @@ export default defineConfig({
         {
           src: '../node_modules/@plantuml/core/{plantuml,viz-global,themes}.js',
           dest: 'widgets/plantuml-app'
+        },
+        // PlantUML stdlib bundles, loaded by the engine for `!include <lib/...>`.
+        {
+          src: '../vendor/plantuml-stdlib/*.min.js',
+          dest: 'widgets/plantuml-app'
         }
       ]
     }),
