@@ -2,7 +2,7 @@
   "name": "plantuml-diagrams",
   "title": "PlantUML",
   "description": "Draw PlantUML diagrams in issues, comments and Knowledge Base articles. Insert a PlantUML block from the editor toolbar and type the diagram source. The diagram is rendered in your browser: the source is not sent to a server. C4 diagrams are supported.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "$schema": "https://json.schemastore.org/youtrack-app.json",
   "vendor": {
     "name": "ve-ev"

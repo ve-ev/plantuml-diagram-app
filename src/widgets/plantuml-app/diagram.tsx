@@ -21,7 +21,8 @@ type Props = {
 };
 
 /**
- * Shows one diagram as an <img>, so scripts and links inside the SVG never run.
+ * Shows one diagram as an <img>, so scripts and links inside the SVG never run. The image is a
+ * data: URL: it has an opaque origin also when a user opens it in a new tab.
  */
 const DiagramComponent: FC<Props> = ({source, onSize}) => {
   const [url, setUrl] = useState<string | null>(null);
@@ -29,14 +30,12 @@ const DiagramComponent: FC<Props> = ({source, onSize}) => {
   const dark = useDark();
 
   useEffect(() => {
-    let objectUrl: string | null = null;
     let cancelled = false;
     renderSvg(source, dark).then(svg => {
       if (cancelled) {
         return;
       }
-      objectUrl = URL.createObjectURL(new Blob([svg], {type: 'image/svg+xml'}));
-      setUrl(objectUrl);
+      setUrl(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
       setError(null);
     }, (e: Error) => {
       if (!cancelled) {
@@ -45,9 +44,6 @@ const DiagramComponent: FC<Props> = ({source, onSize}) => {
     });
     return () => {
       cancelled = true;
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
     };
   }, [source, dark]);
 
