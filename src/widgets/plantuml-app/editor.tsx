@@ -17,7 +17,7 @@ type Props = {
 };
 
 /**
- * Mounting the editor switches the host into config mode: YouTrack shows the widget in a dialog.
+ * Mounting the editor switches the host into config mode, which shows the widget in a dialog.
  */
 const EditorComponent: FC<Props> = ({initialSource, canCancel, host, onSave, onCancel}) => {
   const [source, setSource] = useState(initialSource);

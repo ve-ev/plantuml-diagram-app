@@ -1,8 +1,7 @@
-# PlantUML for YouTrack
+# PlantUML diagrams
 
-A YouTrack app that shows [PlantUML](https://plantuml.com) diagrams in issue descriptions,
-comments and Knowledge Base articles. It is an answer to
-[JT-57907 "Plantuml diagram support"](https://youtrack.jetbrains.com/issue/JT-57907).
+An app that shows [PlantUML](https://plantuml.com) diagrams in issue descriptions, comments
+and Knowledge Base articles.
 
 The diagram is rendered in the browser with the official PlantUML engine
 [`@plantuml/core`](https://www.npmjs.com/package/@plantuml/core) (PlantUML compiled to
@@ -33,7 +32,7 @@ The app contains the C4-PlantUML library:
 !include <C4/C4_Container>
 
 Person(user, "Engineer")
-System_Boundary(yt, "YouTrack") {
+System_Boundary(tracker, "Issue tracker") {
   Container(widget, "PlantUML widget", "React", "Renders diagrams")
 }
 Rel(user, widget, "Edits diagram")
@@ -44,7 +43,7 @@ Rel(user, widget, "Edits diagram")
 - **Height.** A widget cannot change its own height. The diagram becomes smaller to fit the
   block. The editor shows the height of the diagram. Drag the bottom edge of the block to show
   the diagram at full size.
-- **No history.** YouTrack keeps the diagram source in the widget configuration, not in the text.
+- **No history.** The diagram source is kept in the widget configuration, not in the text.
   A change of the diagram source does not show in the activity stream.
 - **Only in the browser.** Email notifications, PDF export and search do not show the diagram.
 - **Code blocks.** A ` ```plantuml ` code block does not become a diagram. Use the widget.
@@ -65,10 +64,10 @@ npm test         # unit tests (Node.js test runner)
 npm run lint
 ```
 
-Upload to a YouTrack instance:
+Upload to an instance:
 
 ```bash
-export YOUTRACK_HOST=https://youtrack.example.com
+export YOUTRACK_HOST=https://tracker.example.com
 export YOUTRACK_API_TOKEN=perm-...
 npm run upload
 ```
@@ -82,7 +81,7 @@ Or run `npm run pack` and import `plantuml-diagrams.zip` on the **Administration
 | `manifest.json` | App manifest. One `MARKDOWN` widget. |
 | `src/widgets/plantuml-app/app.tsx` | View mode and switch to the editor. |
 | `src/widgets/plantuml-app/editor.tsx` | Editor dialog (config mode) with live preview. |
-| `src/widgets/plantuml-app/diagram.tsx` | Renders one diagram as an `<img>`. Follows the YouTrack theme. |
+| `src/widgets/plantuml-app/diagram.tsx` | Renders one diagram as an `<img>`. Follows the host theme. |
 | `src/widgets/plantuml-app/plantuml.ts` | Loads the engine. Runs renders one at a time. |
 | `src/widgets/plantuml-app/lines.ts` | Prepares the source and reads errors from the engine output. |
 | `vendor/plantuml-stdlib/` | PlantUML standard library bundles (C4). |

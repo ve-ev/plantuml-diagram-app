@@ -15,7 +15,7 @@ type Engine = {
   ) => void;
 };
 
-// The widget page is `about:srcdoc`; YouTrack sets its base URL to the app files.
+// The widget page is `about:srcdoc`; the host sets its base URL to the app files.
 const engine: Promise<Engine> = import(/* @vite-ignore */ new URL('plantuml.js', document.baseURI).href);
 
 let queue: Promise<unknown> = Promise.resolve();

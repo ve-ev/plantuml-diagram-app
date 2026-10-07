@@ -2,7 +2,7 @@ import React, {memo, useEffect, useState} from 'react';
 import type {FC} from 'react';
 import {renderSvg} from './plantuml';
 
-// YouTrack sets this class on the widget body when its theme is dark, also after the page loads.
+// The host sets this class on the widget body when its theme is dark, also after the page loads.
 const DARK_CLASS = 'ring-ui-theme-dark';
 
 function useDark(): boolean {
