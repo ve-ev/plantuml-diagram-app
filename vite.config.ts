@@ -65,7 +65,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         // List every widget entry point here
-        plantumlApp: resolve(__dirname, 'src/widgets/plantuml-app/index.html')
+        plantumlApp: resolve(__dirname, 'src/widgets/plantuml-app/index.html'),
+        plantumlBlocks: resolve(__dirname, 'src/widgets/plantuml-blocks/index.html')
 
       }
     }

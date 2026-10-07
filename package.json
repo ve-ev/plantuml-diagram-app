@@ -1,13 +1,13 @@
 {
   "name": "plantuml-diagrams",
   "private": true,
-  "version": "0.3.2",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && youtrack-app validate dist",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "test": "node --test src/widgets/plantuml-app/lines.test.ts",
+    "test": "node --test src/widgets/plantuml-app/*.test.ts",
     "pack": "rm -rf plantuml-diagrams.zip && cd dist && zip -r ../plantuml-diagrams.zip .",
     "upload": "youtrack-app upload dist"
   },

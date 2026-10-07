@@ -1,9 +1,22 @@
 /**
- * Glue around the PlantUML engine (`@plantuml/core`). The engine files are copied next to the
- * widget page by vite.config.ts and loaded at runtime, not bundled.
+ * Glue around the PlantUML engine (`@plantuml/core`). The engine files are copied into the
+ * plantuml-app widget folder by vite.config.ts and loaded at runtime, not bundled. Other widgets
+ * load them from that folder too.
  */
 
 import {parseError, toLines} from './lines';
+
+// The widget page is `about:srcdoc`; the host sets its base URL to the app files.
+const ENGINE_DIR = new URL('../plantuml-app/', document.baseURI).href;
+
+declare global {
+  interface Window {
+    PLANTUML_STDLIB_BASE?: string;
+  }
+}
+
+// The engine loads themes.js and the stdlib bundles (c4.min.js) from this folder.
+window.PLANTUML_STDLIB_BASE = ENGINE_DIR;
 
 type Engine = {
   renderToString: (
@@ -15,8 +28,7 @@ type Engine = {
   ) => void;
 };
 
-// The widget page is `about:srcdoc`; the host sets its base URL to the app files.
-const engine: Promise<Engine> = import(/* @vite-ignore */ new URL('plantuml.js', document.baseURI).href);
+const engine: Promise<Engine> = import(/* @vite-ignore */ `${ENGINE_DIR}plantuml.js`);
 
 let queue: Promise<unknown> = Promise.resolve();
 

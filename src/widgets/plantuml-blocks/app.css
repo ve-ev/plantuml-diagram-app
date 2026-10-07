@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  background: transparent;
+  font-family: var(--ring-font-family);
+  font-size: var(--ring-font-size);
+  line-height: var(--ring-line-height);
+  color: var(--ring-text-color);
+}
+
+.panel-text {
+  padding: calc(var(--ring-unit) / 2) 0;
+  color: var(--ring-secondary-color);
+}
+
+.panel-errors {
+  margin: 0;
+  padding: 0 0 0 calc(var(--ring-unit) * 1.5);
+  border-left: 2px solid var(--ring-error-color);
+  color: var(--ring-secondary-color);
+  font-size: var(--ring-font-size-smaller);
+  white-space: pre-wrap;
+}
