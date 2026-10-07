@@ -1,5 +1,7 @@
 # PlantUML diagrams
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 An app that shows [PlantUML](https://plantuml.com) diagrams in issue descriptions, comments
 and Knowledge Base articles.
 
@@ -7,7 +9,7 @@ The diagram is rendered in the browser with the official PlantUML engine
 [`@plantuml/core`](https://www.npmjs.com/package/@plantuml/core) (PlantUML compiled to
 JavaScript). No PlantUML server is necessary. The diagram source does not go out of the browser.
 
-![Diagrams rendered by the app: a C4 container diagram, a sequence diagram and a mind map](docs/preview.png)
+![Diagrams rendered by the app: a C4 container diagram, a sequence diagram and a mind map](screenshots/preview.png)
 
 ## Use
 
