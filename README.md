@@ -1,6 +1,7 @@
 # PlantUML diagrams
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![GitHub release](https://img.shields.io/github/v/release/ve-ev/plantuml-diagram-app?label=release&display_name=release)](https://github.com/ve-ev/plantuml-diagram-app/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 An app that shows [PlantUML](https://plantuml.com) diagrams in issue descriptions, comments
 and Knowledge Base articles.
