@@ -127,7 +127,35 @@ export YOUTRACK_API_TOKEN=perm-...
 npm run upload
 ```
 
-Or run `npm run pack` and import `plantuml-diagrams.zip` on the **Administration → Apps** page.
+Or run `npm run pack` and import `app.zip` on the **Administration → Apps** page.
+
+### Release
+
+GitHub Actions makes releases. Both workflows run only by hand (**Actions → workflow → Run workflow**).
+
+- **Release** (`.github/workflows/release.yml`): sets the version in `package.json` and
+  `manifest.json`, runs lint, tests and the build, commits the version, adds the tag
+  `release-<version>`, and attaches `app-<version>.zip` to a GitHub release.
+
+  ```bash
+  gh workflow run release.yml -f version=1.0.1 -f notes="- What changed."
+  ```
+
+- **Publish to Marketplace** (`.github/workflows/publish-marketplace.yml`): uploads the zip of an
+  existing release to JetBrains Marketplace. Each version waits for moderation.
+
+  ```bash
+  gh workflow run publish-marketplace.yml -f version=1.0.1
+  ```
+
+  Before the first run:
+  1. Upload the first version by hand: on [plugins.jetbrains.com](https://plugins.jetbrains.com)
+     select **Upload plugin**, select **YouTrack**, and upload `app-<version>.zip` from the release.
+  2. After approval, write the numeric plugin id into `PLUGIN_ID` in the workflow.
+  3. Create a [Marketplace token](https://plugins.jetbrains.com/author/me/tokens) and save it in
+     the repository secret `MARKETPLACE_TOKEN`.
+
+Update `changeNotes` in `manifest.json` before each release: Marketplace shows it.
 
 ### Structure
 

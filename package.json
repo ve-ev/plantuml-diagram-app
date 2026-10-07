@@ -8,7 +8,7 @@
     "build": "tsc && vite build && youtrack-app validate dist",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "test": "node --test src/widgets/plantuml-app/*.test.ts",
-    "pack": "rm -rf plantuml-diagrams.zip && cd dist && zip -r ../plantuml-diagrams.zip .",
+    "pack": "rm -f app.zip && cd dist && zip -qr ../app.zip .",
     "upload": "youtrack-app upload dist"
   },
   "dependencies": {
