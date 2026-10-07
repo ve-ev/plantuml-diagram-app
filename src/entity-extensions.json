@@ -1,0 +1,22 @@
+{
+  "entityTypeExtensions": [
+    {
+      "entityType": "Issue",
+      "properties": {
+        "plantumlConvert": {
+          "type": "string",
+          "description": "\"true\" when ```plantuml code blocks of this issue are converted to diagrams on save."
+        }
+      }
+    },
+    {
+      "entityType": "Article",
+      "properties": {
+        "plantumlConvert": {
+          "type": "string",
+          "description": "\"true\" when ```plantuml code blocks of this article are converted to diagrams on save."
+        }
+      }
+    }
+  ]
+}

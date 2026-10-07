@@ -7,16 +7,21 @@ body {
   color: var(--ring-text-color);
 }
 
-.panel-text {
-  padding: calc(var(--ring-unit) / 2) 0;
+/* One line: the panel must not push the description down. */
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--ring-unit) * 1.5);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--ring-secondary-color);
 }
 
-.panel-errors {
-  margin: 0;
-  padding: 0 0 0 calc(var(--ring-unit) * 1.5);
-  border-left: 2px solid var(--ring-error-color);
-  color: var(--ring-secondary-color);
-  font-size: var(--ring-font-size-smaller);
-  white-space: pre-wrap;
+.text.error {
+  color: var(--ring-error-color);
 }

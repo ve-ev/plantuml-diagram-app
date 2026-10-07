@@ -30,6 +30,11 @@ export default defineConfig({
           src: '../public/*.*',
           dest: '.'
         },
+        // HTTP handler and extension properties; the host reads them from the package root.
+        {
+          src: '{blocks.js,entity-extensions.json}',
+          dest: '.'
+        },
         // PlantUML engine; loaded at runtime next to the widget page, not bundled.
         {
           src: '../node_modules/@plantuml/core/{plantuml,viz-global,themes}.js',
