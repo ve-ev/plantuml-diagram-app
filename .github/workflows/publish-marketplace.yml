@@ -14,9 +14,8 @@ on:
         type: string
 
 env:
-  # Public id from https://plugins.jetbrains.com/plugin/<pluginId>-<slug>.
-  # Set it after the first version is uploaded by hand (see README).
-  PLUGIN_ID: '00000'
+  # Public id from https://plugins.jetbrains.com/plugin/34866-plantuml.
+  PLUGIN_ID: '34866'
 
 jobs:
   publish:

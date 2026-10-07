@@ -1,5 +1,6 @@
 # PlantUML diagrams
 
+[![JetBrains Plugin](https://img.shields.io/badge/JetBrains_Marketplace-PlantUML-blue)](https://plugins.jetbrains.com/plugin/34866-plantuml)
 [![GitHub release](https://img.shields.io/github/v/release/ve-ev/plantuml-diagram-app?label=release&display_name=release)](https://github.com/ve-ev/plantuml-diagram-app/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -143,12 +144,9 @@ GitHub Actions makes releases. Both workflows run only by hand (**Actions → wo
   gh workflow run publish-marketplace.yml -f version=1.0.1
   ```
 
-  Before the first run:
-  1. Upload the first version by hand: on [plugins.jetbrains.com](https://plugins.jetbrains.com)
-     select **Upload plugin**, select **YouTrack**, and upload `app-<version>.zip` from the release.
-  2. After approval, write the numeric plugin id into `PLUGIN_ID` in the workflow.
-  3. Create a [Marketplace token](https://plugins.jetbrains.com/author/me/tokens) and save it in
-     the repository secret `MARKETPLACE_TOKEN`.
+  The workflow uploads to the listing [34866](https://plugins.jetbrains.com/plugin/34866-plantuml).
+  It needs a [Marketplace token](https://plugins.jetbrains.com/author/me/tokens) in the repository
+  secret `MARKETPLACE_TOKEN`.
 
 Update `changeNotes` in `manifest.json` before each release: Marketplace shows it.
 
