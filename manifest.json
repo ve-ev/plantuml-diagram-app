@@ -2,10 +2,10 @@
   "name": "plantuml-diagrams",
   "title": "PlantUML",
   "description": "Draw PlantUML diagrams in issues, comments and Knowledge Base articles. Insert a PlantUML block from the editor toolbar and type the diagram source. The diagram is rendered in your browser: the source is not sent to a server. C4 diagrams are supported. In projects that the app is attached to, a one-line panel can replace ```plantuml code blocks with diagrams and back. The app changes an issue or article only after a user turns this on for that item.",
-  "version": "1.0.0",
-  "minYouTrackVersion": "2026.3.0",
+  "version": "1.0.1",
+  "minYouTrackVersion": "2026.2.0",
   "url": "https://github.com/ve-ev/plantuml-diagram-app",
-  "changeNotes": "<h3>Version 1.0.0</h3>\n<ul>\n  <li><b>Feature:</b> PlantUML block in the editor (<i>Images and embedded content → PlantUML</i>) with a live preview</li>\n  <li><b>Feature:</b> Diagrams are rendered in the browser; the diagram source is not sent to a server</li>\n  <li><b>Feature:</b> C4-PlantUML library (<code>!include &lt;C4/...&gt;</code>)</li>\n  <li><b>Feature:</b> Light and dark theme</li>\n  <li><b>Optional:</b> in projects that the app is attached to, a one-line panel converts <code>```plantuml</code> code blocks to diagrams and back. An issue or article changes only after a user selects <i>Convert to diagrams</i> for it</li>\n</ul>",
+  "changeNotes": "<h3>Version 1.0.1</h3>\n<ul>\n  <li><b>Change:</b> The app now works with YouTrack 2026.2 and later</li>\n</ul>\n<h3>Version 1.0.0</h3>\n<ul>\n  <li><b>Feature:</b> PlantUML block in the editor (<i>Images and embedded content → PlantUML</i>) with a live preview</li>\n  <li><b>Feature:</b> Diagrams are rendered in the browser; the diagram source is not sent to a server</li>\n  <li><b>Feature:</b> C4-PlantUML library (<code>!include &lt;C4/...&gt;</code>)</li>\n  <li><b>Feature:</b> Light and dark theme</li>\n  <li><b>Optional:</b> in projects that the app is attached to, a one-line panel converts <code>```plantuml</code> code blocks to diagrams and back. An issue or article changes only after a user selects <i>Convert to diagrams</i> for it</li>\n</ul>",
   "$schema": "https://json.schemastore.org/youtrack-app.json",
   "vendor": {
     "name": "ve-ev",
