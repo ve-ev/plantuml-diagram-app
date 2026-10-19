@@ -1,7 +1,7 @@
 {
   "name": "plantuml-diagrams",
   "title": "PlantUML",
-  "description": "Draw PlantUML diagrams in issues, comments and Knowledge Base articles. Insert a PlantUML block from the editor toolbar and type the diagram source. The diagram is rendered in your browser: the source is not sent to a server. C4 diagrams are supported. In projects that the app is attached to, a one-line panel can replace ```plantuml code blocks with diagrams and back. The app changes an issue or article only after a user turns this on for that item.",
+  "description": "Draw PlantUML diagrams in issues, comments and Knowledge Base articles. Insert a PlantUML block from the editor toolbar and type the diagram source. The diagram is rendered on your YouTrack server when you save it: the source is not sent to other servers, and readers do not load a diagram engine. C4 diagrams are supported.",
   "version": "1.0.1",
   "minYouTrackVersion": "2026.2.0",
   "url": "https://github.com/ve-ev/plantuml-diagram-app",
@@ -18,7 +18,7 @@
       "name": "PlantUML",
       "indexPath": "plantuml-app/index.html",
       "extensionPoint": "MARKDOWN",
-      "description": "PlantUML diagram rendered in the browser",
+      "description": "PlantUML diagram rendered on the YouTrack server",
       "iconPath": "plantuml-app/widget-icon.svg",
       "borderless": true,
       "defaultDimensions": {
@@ -26,30 +26,6 @@
         "height": "400px"
       },
       "settingsSchemaPath": "plantuml-app/settings.json"
-    },
-    {
-      "key": "plantuml-blocks",
-      "name": "PlantUML",
-      "indexPath": "plantuml-blocks/index.html",
-      "extensionPoint": "ISSUE_BELOW_SUMMARY",
-      "iconPath": "plantuml-blocks/widget-icon.svg",
-      "description": "Converts ```plantuml code blocks to PlantUML diagrams and back, after a user turns it on for the item.",
-      "permissions": [
-        "UPDATE_ISSUE"
-      ],
-      "guard": "({entity}) => !entity.draft"
-    },
-    {
-      "key": "plantuml-blocks-article",
-      "name": "PlantUML",
-      "indexPath": "plantuml-blocks/index.html",
-      "extensionPoint": "ARTICLE_BELOW_SUMMARY",
-      "iconPath": "plantuml-blocks/widget-icon.svg",
-      "description": "Converts ```plantuml code blocks to PlantUML diagrams and back, after a user turns it on for the item.",
-      "permissions": [
-        "UPDATE_ARTICLE"
-      ],
-      "guard": "({entity}) => !entity.draft"
     }
   ]
 }

@@ -30,20 +30,11 @@ export default defineConfig({
           src: '../public/*.*',
           dest: '.'
         },
-        // HTTP handler and extension properties; the host reads them from the package root.
+        // Render HTTP handler; the host reads scripts from the package root.
+        // scripts/build-engine.mjs adds plantuml-engine.js next to them.
         {
-          src: '{blocks.js,entity-extensions.json}',
+          src: '{render,lines}.js',
           dest: '.'
-        },
-        // PlantUML engine; loaded at runtime next to the widget page, not bundled.
-        {
-          src: '../node_modules/@plantuml/core/{plantuml,viz-global,themes}.js',
-          dest: 'widgets/plantuml-app'
-        },
-        // PlantUML stdlib bundles, loaded by the engine for `!include <lib/...>`.
-        {
-          src: '../vendor/plantuml-stdlib/*.min.js',
-          dest: 'widgets/plantuml-app'
         }
       ]
     }),
@@ -70,9 +61,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         // List every widget entry point here
-        plantumlApp: resolve(__dirname, 'src/widgets/plantuml-app/index.html'),
-        plantumlBlocks: resolve(__dirname, 'src/widgets/plantuml-blocks/index.html')
-
+        plantumlApp: resolve(__dirname, 'src/widgets/plantuml-app/index.html')
       }
     }
   }

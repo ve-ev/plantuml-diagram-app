@@ -1,55 +1,29 @@
 /**
- * Glue around the PlantUML engine (`@plantuml/core`). The engine files are copied into the
- * plantuml-app widget folder by vite.config.ts and loaded at runtime, not bundled. Other widgets
- * load them from that folder too.
+ * Client of the app's render endpoint (render.js). The widget never loads the engine.
  */
 
-import {parseError, toLines} from './lines';
+import type {CustomWidgetAPILayer} from '../../../@types/globals';
 
-// The widget page is `about:srcdoc`; the host sets its base URL to the app files.
-const ENGINE_DIR = new URL('../plantuml-app/', document.baseURI).href;
+export type Rendered = {svg: string; svgDark: string};
 
-declare global {
-  interface Window {
-    PLANTUML_STDLIB_BASE?: string;
+export async function renderSvg(host: CustomWidgetAPILayer, source: string, dark: boolean): Promise<string> {
+  const result = await host.fetchApp('render/svg', {method: 'POST', body: {source, dark}}) as
+    {svg?: string; error?: string};
+  if (result.error || !result.svg) {
+    throw new Error(result.error ?? 'PlantUML render failed');
   }
+  return result.svg;
 }
 
-// The engine loads themes.js and the stdlib bundles (c4.min.js) from this folder.
-window.PLANTUML_STDLIB_BASE = ENGINE_DIR;
-
-type Engine = {
-  renderToString: (
-    lines: string[],
-    onSuccess: (svg: string) => void,
-    onError: (message: string) => void,
-    // Undocumented in 1.2026.8, read by the engine: `dark`, `maxSvgSize`.
-    options?: {dark?: boolean}
-  ) => void;
-};
-
-const engine: Promise<Engine> = import(/* @vite-ignore */ `${ENGINE_DIR}plantuml.js`);
-
-let queue: Promise<unknown> = Promise.resolve();
-
-/**
- * Renders the source to an SVG string. The engine keeps shared state, so renders run one at a time.
- */
-export function renderSvg(source: string, dark: boolean): Promise<string> {
-  const next = queue.then(async () => {
-    const {renderToString} = await engine;
-    const lines = toLines(source);
-    // toLines may add a `@startuml` line; error line numbers must match what the author typed.
-    const offset = lines.length > source.split(/\r\n|\r|\n/).length ? 1 : 0;
-    const svg = await new Promise<string>((resolve, reject) => {
-      renderToString(lines, resolve, message => reject(new Error(message)), {dark});
-    });
-    const error = parseError(svg);
-    if (error) {
-      throw new Error(`Line ${error.line - offset}: ${error.message}`);
-    }
-    return svg;
-  });
-  queue = next.catch(() => undefined);
-  return next;
+/** Both themes, rendered in parallel. `known` is a theme that is already rendered. */
+export async function renderBoth(
+  host: CustomWidgetAPILayer,
+  source: string,
+  known: Partial<Rendered> = {}
+): Promise<Rendered> {
+  const [svg, svgDark] = await Promise.all([
+    known.svg ?? renderSvg(host, source, false),
+    known.svgDark ?? renderSvg(host, source, true)
+  ]);
+  return {svg, svgDark};
 }

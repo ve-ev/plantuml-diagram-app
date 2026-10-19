@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {parseError, toLines} from './lines.ts';
+import {parseError, toLines} from './lines.js';
 
 test('wraps a bare diagram in @startuml / @enduml', () => {
   assert.deepEqual(toLines('A -> B\r\nB -> A'), ['@startuml', 'A -> B', 'B -> A', '@enduml']);
