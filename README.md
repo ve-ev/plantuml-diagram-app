@@ -7,9 +7,11 @@
 An app that shows [PlantUML](https://plantuml.com) diagrams in issue descriptions, comments
 and Knowledge Base articles.
 
-The diagram is rendered in the browser with the official PlantUML engine
+The diagram is rendered on your YouTrack server with the official PlantUML engine
 [`@plantuml/core`](https://www.npmjs.com/package/@plantuml/core) (PlantUML compiled to
-JavaScript). No PlantUML server is necessary. The diagram source does not go out of the browser.
+JavaScript), when you save it. Readers do not load a diagram engine: the app stores the rendered
+SVG with the diagram. No PlantUML server is necessary, and the diagram source does not go to
+other servers.
 
 ![Diagrams rendered by the app: a C4 container diagram, a sequence diagram and a mind map](screenshots/preview.png)
 
@@ -44,42 +46,6 @@ System_Boundary(tracker, "Issue tracker") {
 Rel(user, widget, "Edits diagram")
 ```
 
-### Code blocks (optional)
-
-The app can also replace ` ```plantuml ` code blocks with diagrams, as in GitLab.
-
-#### What the app changes
-
-- **Without project attachment**, the app changes nothing. Only users insert diagrams.
-- **With project attachment**, a one-line panel below the summary of an issue or the title of an
-  article shows the PlantUML code blocks. Only users who can edit the item see it.
-- **The app changes an item only after a user turns conversion on for that item** with
-  **Convert to diagrams**. Then:
-  - The app replaces each ` ```plantuml ` code block in the description or the content with a
-    diagram widget. The widget keeps the source of the block, and the block height fits the
-    diagram.
-  - After each next save, new code blocks also become diagrams.
-  - The change is made on behalf of the user who opens the item, in the browser of that user.
-    The activity stream shows it as a change of the description.
-- **Revert to code** replaces the diagram widgets of the item with code blocks again and turns
-  conversion off for the item.
-- The app does not change comments, and it does not change code blocks inside other code blocks.
-
-#### Use
-
-1. Attach the app to the project (**Administration → Apps → PlantUML → Projects**).
-2. Write the diagram in a code block and save the text:
-
-   ````
-   ```plantuml
-   Alice -> Bob : request
-   ```
-   ````
-
-3. In the panel below the summary, select **Convert to diagrams**.
-4. To change a diagram, use **Edit** on the diagram. To get the code blocks back, select
-   **Revert to code** in the panel.
-
 ## Limits
 
 - **Height.** A widget cannot change its own height. The diagram becomes smaller to fit the
@@ -88,21 +54,18 @@ The app can also replace ` ```plantuml ` code blocks with diagrams, as in GitLab
 - **No history.** The diagram source is kept in the widget configuration, not in the text.
   A change of the diagram source does not show in the activity stream.
 - **Only in the browser.** Email notifications, PDF export and search do not show the diagram.
-- **Code blocks** become diagrams only in projects that the app is attached to, only in items
-  where a user turned conversion on, and only in descriptions and articles, not in comments. The
-  conversion starts when a user who can edit opens the item after the save.
-- **Internal REST fields.** The code block conversion uses REST fields that the public API does
-  not document (`markdownEmbeddings`, `admin/widgets/general`). A future version of the host
-  can change them. Then the conversion stops with an error in the panel. Diagrams that are
-  already in the text continue to work.
-- **Simultaneous edits.** If two users save the same text at the same time, the conversion can
-  overwrite the change of one user. The conversion reads the text again before it saves, which
-  makes this rare.
+- **No Graphviz.** The YouTrack script runtime cannot run Graphviz, so the engine lays out class,
+  component, state, use case and C4 diagrams with Smetana, the Java port of Graphviz in PlantUML.
+  The layout can differ from the layout of the PlantUML server.
+- **Text width.** The server has no fonts. The engine measures text with fixed Helvetica letter
+  widths, so text in other fonts can fit its box less exactly.
+- **Speed.** A render takes a fraction of a second, but `!include <C4/...>` adds several seconds
+  to each render, and much more if the YouTrack JVM runs scripts without a JIT compiler. Saving a
+  C4 diagram renders it twice, in the light and the dark theme.
+- **Diagrams of version 1.0.** They have no stored SVG. The server renders them each time they
+  are shown, until the next edit.
 - **Libraries.** Of the PlantUML standard library, only C4 is available. `!include` of a URL or
   of a file does not work.
-- **Icons in the C4 legend** show as empty squares. The default font does not contain these glyphs.
-- **Speed.** Each diagram loads the engine (approximately 6 MB, cached by the browser). A page
-  with many diagrams loads slowly.
 
 ## Development
 
@@ -155,22 +118,19 @@ Update `changeNotes` in `manifest.json` before each release: Marketplace shows i
 
 | Path | Content |
 |---|---|
-| `manifest.json` | App manifest. One `MARKDOWN` widget and the code block panels for issues and articles. |
-| `src/widgets/plantuml-app/app.tsx` | View mode and switch to the editor. |
-| `src/widgets/plantuml-app/editor.tsx` | Editor dialog (config mode) with live preview. |
-| `src/widgets/plantuml-app/diagram.tsx` | Renders one diagram as an `<img>`. Follows the host theme. |
-| `src/widgets/plantuml-app/plantuml.ts` | Loads the engine. Runs renders one at a time. |
-| `src/widgets/plantuml-app/lines.ts` | Prepares the source and reads errors from the engine output. |
-| `src/widgets/plantuml-app/blocks.ts` | Finds and replaces ` ```plantuml ` code blocks. |
-| `src/widgets/plantuml-blocks/app.tsx` | One-line panel below the summary: converts code blocks to diagram widgets and back. |
-| `src/blocks.js`, `src/entity-extensions.json` | HTTP handler and extension property that store the conversion setting of an item. |
+| `manifest.json` | App manifest. One `MARKDOWN` widget. |
+| `src/render.js` | HTTP handler `render/svg`: renders the source to SVG on the server, in one theme. |
+| `src/lines.js` | Prepares the source and reads errors from the engine output. |
+| `server/shim.js` | Minimal DOM, timers and text measure, so that the engine runs in the YouTrack script runtime. |
+| `scripts/build-engine.mjs` | Builds `dist/plantuml-engine.js`: the shim, themes, the C4 bundle and the engine as one CommonJS module. |
+| `src/widgets/plantuml-app/app.tsx` | View mode: shows the stored SVG of the current theme. |
+| `src/widgets/plantuml-app/editor.tsx` | Editor dialog (config mode) with a live preview from the server. Loaded only for editing. |
+| `src/widgets/plantuml-app/plantuml.ts` | Client of the render endpoint. |
 | `vendor/plantuml-stdlib/` | PlantUML standard library bundles (C4). |
 
-The build copies the engine files (`plantuml.js`, `viz-global.js`, `themes.js`) and the
-library bundles next to the widget page. They are loaded at run time, not bundled by Vite.
-
 To update the engine, change the exact version of `@plantuml/core` in `package.json`. Then make
-sure that `npm test` passes: the error parser depends on the engine output format.
+sure that `npm test` passes and that `npm run build` finds the engine export: the build script
+and the error parser depend on the engine output format.
 
 ## License
 

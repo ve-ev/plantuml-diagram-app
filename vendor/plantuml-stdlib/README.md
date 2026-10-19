@@ -1,7 +1,7 @@
 # PlantUML stdlib bundles
 
-The engine loads `<lib>.min.js` from the widget folder when a diagram uses `!include <lib/...>`.
-The build copies every file of this folder into `dist/widgets/plantuml-app/`.
+`scripts/build-engine.mjs` puts every `*.min.js` file of this folder into `dist/plantuml-engine.js`,
+in front of the engine, so `!include <lib/...>` works on the server without loading files.
 
 | File | Library | Source |
 |---|---|---|
