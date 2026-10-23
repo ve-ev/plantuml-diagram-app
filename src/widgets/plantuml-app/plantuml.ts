@@ -50,6 +50,33 @@ const loadEngine = () => {
   return engine;
 };
 
+/**
+ * Colors for the dark mode of the engine. Some of its dark defaults and the C4 colors, made for a
+ * white background, have low contrast. These values give text a WCAG 2 contrast of 4.5:1 or more
+ * and an APCA contrast of Lc 60 or more on the dark background and on the element fills. They come
+ * first in the diagram, and C4 sets its colors with `?=`, so the colors that the author sets win.
+ */
+const DARK_COLORS = [
+  'skinparam HeaderFontColor #BBBBBB',
+  'skinparam FooterFontColor #BBBBBB',
+  'skinparam ClassStereotypeFontColor #CCCCCC',
+  // The activation bar is white; text drawn over it is white too.
+  'skinparam SequenceLifeLineBackgroundColor #313139',
+  '<style>',
+  'timingDiagram {',
+  '  concise {',
+  '    BackGroundColor #4A4A4A',
+  '  }',
+  '}',
+  '</style>',
+  '!$ARROW_COLOR = "#BBBBBB"',
+  '!$BOUNDARY_COLOR = "#CCCCCC"',
+  '!$CONTAINER_BG_COLOR = "#2F72B8"',
+  '!$EXTERNAL_PERSON_BG_COLOR = "#4A4A4A"',
+  '!$EXTERNAL_SYSTEM_BG_COLOR = "#5E5E5E"',
+  '!$EXTERNAL_CONTAINER_BG_COLOR = "#737373"'
+];
+
 let queue: Promise<unknown> = Promise.resolve();
 
 /** The engine keeps shared state, so renders run one at a time. */
@@ -58,7 +85,11 @@ function renderNow(source: string, dark: boolean): Promise<string> {
     const {renderToString} = await loadEngine();
     const lines = toLines(source);
     // toLines may add a `@startuml` line; error line numbers must match what the author typed.
-    const offset = lines.length > splitLines(source).length ? 1 : 0;
+    let offset = lines.length > splitLines(source).length ? 1 : 0;
+    if (dark) {
+      lines.splice(lines.findIndex(line => line.trim().startsWith('@start')) + 1, 0, ...DARK_COLORS);
+      offset += DARK_COLORS.length;
+    }
     const svg = await new Promise<string>((resolve, reject) => {
       renderToString(lines, resolve, message => reject(new Error(message)), {dark});
     });
