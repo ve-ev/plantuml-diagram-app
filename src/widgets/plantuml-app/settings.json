@@ -3,6 +3,12 @@
   "properties": {
     "source": {
       "type": "string"
+    },
+    "svg": {
+      "type": "string"
+    },
+    "svgDark": {
+      "type": "string"
     }
   }
 }

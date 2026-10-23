@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {parseError, toLines} from './lines.ts';
+import {diagramKey, parseError, toLines} from './lines.ts';
 
 test('wraps a bare diagram in @startuml / @enduml', () => {
   assert.deepEqual(toLines('A -> B\r\nB -> A'), ['@startuml', 'A -> B', 'B -> A', '@enduml']);
@@ -22,4 +22,14 @@ test('reads line and message from an error SVG', () => {
 
 test('returns null for a real diagram', () => {
   assert.equal(parseError('<svg><text fill="#000000">Alice</text></svg>'), null);
+});
+
+test('ignores line break style, trailing spaces and blank lines around the diagram', () => {
+  assert.equal(diagramKey('\r\n\nA -> B  \r\nB -> A\t\n\n'), diagramKey('A -> B\nB -> A'));
+});
+
+test('keeps line breaks, blank lines and indentation inside the diagram', () => {
+  assert.notEqual(diagramKey('A -> B\nB -> A'), diagramKey('A -> B B -> A'));
+  assert.notEqual(diagramKey('note: a\n\nb'), diagramKey('note: a\nb'));
+  assert.notEqual(diagramKey('* a\n  * b'), diagramKey('* a\n* b'));
 });

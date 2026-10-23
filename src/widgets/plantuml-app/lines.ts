@@ -10,6 +10,17 @@ export function toLines(source: string): string[] {
   return first.startsWith('@start') ? lines : ['@startuml', ...lines, '@enduml'];
 }
 
+/**
+ * Two sources with the same key give the same diagram, so one render serves both. The key ignores
+ * only whitespace that the engine ignores too: the line break style, spaces at the end of a line
+ * (`toLines` removes them) and blank lines before and after the diagram. A line break ends a
+ * statement, and blank lines and indentation inside the diagram can be part of it: notes show
+ * blank lines, YAML and Markdown-style mind maps use indentation.
+ */
+export function diagramKey(source: string): string {
+  return source.split(/\r\n|\r|\n/).map(line => line.trimEnd()).join('\n').replace(/^\n+|\n+$/g, '');
+}
+
 const ERROR_LINE = /\[From [^\]]*\(line (\d+)\)/;
 const ERROR_TEXT = /<text[^>]*fill="#FF0000"[^>]*>([^<]*)<\/text>/g;
 
