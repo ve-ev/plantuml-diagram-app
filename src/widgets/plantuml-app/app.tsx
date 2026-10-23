@@ -1,20 +1,17 @@
-import React, {lazy, memo, Suspense, useCallback, useEffect, useState} from 'react';
+import React, {lazy, Suspense, useCallback, useEffect, useState} from 'react';
 import type {FC} from 'react';
 import Button from '@jetbrains/ring-ui-built/components/button/button';
-import type {CustomWidgetAPILayer} from '../../../@types/globals';
 import {Diagram} from './diagram';
 import {useDark} from './use-dark';
 import {remember, renderBoth} from './plantuml';
-import type {Rendered} from './plantuml';
+import type {Rendered, Settings} from './plantuml';
 
 // Readers never load the editor.
 const Editor = lazy(() => import('./editor'));
 
-type Config = {source?: string; svg?: string; svgDark?: string};
-
 let requestEdit: (() => void) | null = null;
 
-const host = await YTApp.register({onConfigure: () => requestEdit?.()}) as CustomWidgetAPILayer;
+const host = await YTApp.register({onConfigure: () => requestEdit?.()});
 // The host passes `editable=true` in the page hash when the current user can edit the text.
 const editable = new URLSearchParams(location.hash.slice(1)).get('editable') === 'true';
 
@@ -23,7 +20,7 @@ const editable = new URLSearchParams(location.hash.slice(1)).get('editable') ===
  * older version have no SVG: they load the engine and render for each view until the next edit.
  */
 async function readDiagram(): Promise<{source: string; rendered: Rendered} | null> {
-  const config = await host.readConfig() as Config | null;
+  const config = await host.readConfig() as Partial<Settings> | null;
   if (!config?.source) {
     return null;
   }
@@ -49,13 +46,14 @@ const View: FC<{diagram: {rendered: Rendered} | null; onEdit: () => void}> = ({d
   );
 };
 
-const AppComponent: FC = () => {
+export const App: FC = () => {
   const [diagram, setDiagram] = useState<{source: string; rendered: Rendered} | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [ready, setReady] = useState(false);
 
-  requestEdit = useCallback(() => setEditing(true), []);
+  const edit = () => setEditing(true);
+  requestEdit = edit;
 
   useEffect(() => {
     readDiagram().then(stored => {
@@ -91,7 +89,5 @@ const AppComponent: FC = () => {
   if (error) {
     return <pre className="diagram-error">{error}</pre>;
   }
-  return <View diagram={diagram} onEdit={() => setEditing(true)}/>;
+  return <View diagram={diagram} onEdit={edit}/>;
 };
-
-export const App = memo(AppComponent);

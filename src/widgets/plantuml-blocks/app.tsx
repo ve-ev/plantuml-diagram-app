@@ -8,13 +8,12 @@
  * changes them, conversion stops with an error in this panel; inserted diagrams keep working.
  */
 
-import React, {memo, useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import type {FC} from 'react';
 import Button from '@jetbrains/ring-ui-built/components/button/button';
-import type {CustomWidgetAPILayer} from '../../../@types/globals';
 import {DIAGRAM_WIDGET, embedLine, findBlocks, replaceBlocks, restoreWidgets} from '../plantuml-app/blocks';
 import {renderBoth} from '../plantuml-app/plantuml';
-import type {Rendered} from '../plantuml-app/plantuml';
+import type {Settings} from '../plantuml-app/plantuml';
 
 type Embedding = {id: string; key: string; $type: string; settings?: string; widget?: {id: string}};
 type Widget = {id: string; key: string; appId: string; appName: string};
@@ -30,7 +29,7 @@ const VERTICAL_PADDING = 16;
 const KEY_LETTERS = 'abcdefghijklmnopqrstuvwxyz';
 const KEY_LENGTH = 3;
 
-const host = await YTApp.register() as CustomWidgetAPILayer;
+const host = await YTApp.register();
 const isArticle = YTApp.entity?.type === 'article';
 const resource = `${isArticle ? 'articles' : 'issues'}/${YTApp.entity?.id}`;
 const field = isArticle ? 'content' : 'description';
@@ -72,7 +71,7 @@ function newKey(used: Set<string>): string {
   return key;
 }
 
-type Block = {height: number; settings: {source: string} & Partial<Rendered>};
+type Block = {height: number; settings: Settings};
 
 /**
  * Renders one block in both themes. The widget shows the stored SVG, so readers do not load the
@@ -171,7 +170,7 @@ const Ready: FC<{view: Extract<View, {kind: 'ready'}>; run: Run}> = ({view, run}
   );
 };
 
-const AppComponent: FC = () => {
+export const App: FC = () => {
   const [view, setView] = useState<View>({kind: 'busy', text: ''});
 
   const run = useCallback<Run>((text, action) => {
@@ -191,5 +190,3 @@ const AppComponent: FC = () => {
   }
   return <Ready view={view} run={run}/>;
 };
-
-export const App = memo(AppComponent);

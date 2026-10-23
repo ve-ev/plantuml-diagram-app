@@ -1,3 +1,8 @@
+/** Lines of the source without trailing whitespace, for any line break style. */
+export function splitLines(source: string): string[] {
+  return source.split(/\r\n|\r|\n/).map(line => line.trimEnd());
+}
+
 /**
  * Turns the text the author typed into the lines the engine renders.
  * As in GitLab, `@startuml` / `@enduml` are optional; any other `@start…` type is kept as is.
@@ -5,7 +10,7 @@
  * pads every line to the window width.
  */
 export function toLines(source: string): string[] {
-  const lines = source.split(/\r\n|\r|\n/).map(line => line.trimEnd());
+  const lines = splitLines(source);
   const first = lines.find(line => line.trim() !== '')?.trim() ?? '';
   return first.startsWith('@start') ? lines : ['@startuml', ...lines, '@enduml'];
 }
@@ -18,7 +23,7 @@ export function toLines(source: string): string[] {
  * blank lines, YAML and Markdown-style mind maps use indentation.
  */
 export function diagramKey(source: string): string {
-  return source.split(/\r\n|\r|\n/).map(line => line.trimEnd()).join('\n').replace(/^\n+|\n+$/g, '');
+  return splitLines(source).join('\n').replace(/^\n+|\n+$/g, '');
 }
 
 const ERROR_LINE = /\[From [^\]]*\(line (\d+)\)/;

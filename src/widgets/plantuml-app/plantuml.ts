@@ -5,9 +5,11 @@
  * SVG and never load it.
  */
 
-import {diagramKey, parseError, toLines} from './lines';
+import {diagramKey, parseError, splitLines, toLines} from './lines';
 
 export type Rendered = {svg: string; svgDark: string};
+/** The widget configuration, see settings.json. Diagrams saved by version 1.0 have no SVG. */
+export type Settings = {source: string} & Partial<Rendered>;
 
 // The widget page is `about:srcdoc`; the host sets its base URL to the app files.
 const ENGINE_DIR = new URL('../plantuml-app/', document.baseURI).href;
@@ -56,7 +58,7 @@ function renderNow(source: string, dark: boolean): Promise<string> {
     const {renderToString} = await loadEngine();
     const lines = toLines(source);
     // toLines may add a `@startuml` line; error line numbers must match what the author typed.
-    const offset = lines.length > source.split(/\r\n|\r|\n/).length ? 1 : 0;
+    const offset = lines.length > splitLines(source).length ? 1 : 0;
     const svg = await new Promise<string>((resolve, reject) => {
       renderToString(lines, resolve, message => reject(new Error(message)), {dark});
     });
@@ -92,7 +94,6 @@ export function renderSvg(source: string, dark: boolean): Promise<string> {
   return render;
 }
 
-/** Both themes. */
 export async function renderBoth(source: string): Promise<Rendered> {
   const [svg, svgDark] = await Promise.all([renderSvg(source, false), renderSvg(source, true)]);
   return {svg, svgDark};

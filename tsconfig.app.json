@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
@@ -17,5 +16,7 @@
     /* Linting */
     "strict": true
   },
-  "include": ["src", "@types"]
+  "include": ["src", "@types"],
+  // Tests run in Node (`npm test`), which has its own types.
+  "exclude": ["src/**/*.test.ts"]
 }
