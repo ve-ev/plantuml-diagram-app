@@ -3,23 +3,15 @@ import {defineConfig} from 'vite';
 import {viteStaticCopy} from 'vite-plugin-static-copy';
 import react from '@vitejs/plugin-react';
 
-/*
-      See https://vitejs.dev/config/
-*/
-
-const dropCrossoriginAttributePlugin = () => {
-  return {
-    name: 'no-attribute',
-    transformIndexHtml(html: string) {
-      return html.replaceAll('crossorigin', '');
-    }
-  };
+const dropCrossoriginAttributePlugin = {
+  name: 'no-attribute',
+  transformIndexHtml: (html: string) => html.replaceAll('crossorigin', '')
 };
 
 export default defineConfig({
   plugins: [
     react(),
-    dropCrossoriginAttributePlugin(),
+    dropCrossoriginAttributePlugin,
     viteStaticCopy({
       targets: [
         {

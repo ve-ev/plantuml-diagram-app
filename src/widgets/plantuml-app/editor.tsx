@@ -1,4 +1,4 @@
-import React, {memo, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import type {FC} from 'react';
 import Button from '@jetbrains/ring-ui-built/components/button/button';
 import ButtonSet from '@jetbrains/ring-ui-built/components/button-set/button-set';
@@ -22,7 +22,7 @@ type Props = {
 /**
  * Mounting the editor switches the host into config mode, which shows the widget in a dialog.
  */
-const EditorComponent: FC<Props> = ({initialSource, canCancel, host, onSave, onCancel}) => {
+const Editor: FC<Props> = ({initialSource, canCancel, host, onSave, onCancel}) => {
   const [source, setSource] = useState(initialSource);
   // The preview renders the current theme only; saving renders the other one if it is not cached.
   const [preview, setPreview] = useState<{source: string; svg?: string; error?: string} | null>(null);
@@ -91,4 +91,4 @@ const EditorComponent: FC<Props> = ({initialSource, canCancel, host, onSave, onC
   );
 };
 
-export default memo(EditorComponent);
+export default Editor;

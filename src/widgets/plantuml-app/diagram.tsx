@@ -1,4 +1,4 @@
-import React, {memo} from 'react';
+import React from 'react';
 import type {FC} from 'react';
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
  * Shows one rendered diagram as an <img>, so scripts and links inside the SVG never run. The image
  * is a data: URL: it has an opaque origin also when a user opens it in a new tab.
  */
-const DiagramComponent: FC<Props> = ({svg, onSize}) => (
+export const Diagram: FC<Props> = ({svg, onSize}) => (
   <img
     className="diagram"
     src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`}
@@ -18,5 +18,3 @@ const DiagramComponent: FC<Props> = ({svg, onSize}) => (
     onLoad={e => onSize?.({width: e.currentTarget.naturalWidth, height: e.currentTarget.naturalHeight})}
   />
 );
-
-export const Diagram = memo(DiagramComponent);
