@@ -1,8 +1,7 @@
 /**
- * One-line panel that converts ```plantuml code blocks to PlantUML widgets and back. Nothing
- * changes until a user selects "Convert to diagrams" for this issue or article. After that, the
- * blocks are converted after each save: the host loads this widget again when the item changes.
- * The widget is visible only to users who can edit, and only in projects the app is attached to.
+ * Item in the options menu of an issue or article: converts ```plantuml code blocks to PlantUML
+ * widgets and back. The item changes the text only when the user selects an action in it. It is
+ * visible only to users who can edit, and only in projects the app is attached to.
  *
  * ponytail: uses REST fields that the public API does not document (`markdownEmbeddings`,
  * `admin/widgets/general`). They are what the editor uses to insert a widget. If an update
@@ -14,13 +13,14 @@ import type {FC} from 'react';
 import Button from '@jetbrains/ring-ui-built/components/button/button';
 import type {CustomWidgetAPILayer} from '../../../@types/globals';
 import {DIAGRAM_WIDGET, embedLine, findBlocks, replaceBlocks, restoreWidgets} from '../plantuml-app/blocks';
-import {renderSvg} from '../plantuml-app/plantuml';
+import {renderBoth} from '../plantuml-app/plantuml';
+import type {Rendered} from '../plantuml-app/plantuml';
 
 type Embedding = {id: string; key: string; $type: string; settings?: string; widget?: {id: string}};
 type Widget = {id: string; key: string; appId: string; appName: string};
 type View =
   | {kind: 'busy'; text: string}
-  | {kind: 'ready'; blocks: number; diagrams: number; enabled: boolean}
+  | {kind: 'ready'; blocks: number; diagrams: number; done?: string}
   | {kind: 'failed'; message: string};
 
 // Height of the block when the diagram cannot be rendered: room for the error message.
@@ -32,13 +32,9 @@ const KEY_LENGTH = 3;
 
 const host = await YTApp.register() as CustomWidgetAPILayer;
 const isArticle = YTApp.entity?.type === 'article';
-const scope = isArticle ? 'article' : 'issue';
 const resource = `${isArticle ? 'articles' : 'issues'}/${YTApp.entity?.id}`;
 const field = isArticle ? 'content' : 'description';
 const embeddingType = isArticle ? 'ArticleWidgetEmbedding' : 'IssueWidgetEmbedding';
-
-const readEnabled = async () => ((await host.fetchApp(`blocks/${scope}/state`, {scope: true})) as {enabled: boolean}).enabled;
-const writeEnabled = (enabled: boolean) => host.fetchApp(`blocks/${scope}/state`, {scope: true, method: 'POST', body: {enabled}});
 
 async function readEntity(): Promise<{text: string; embeddings: Embedding[]}> {
   const fields = `${field},markdownEmbeddings(id,key,$type,settings,widget(id))`;
@@ -76,46 +72,52 @@ function newKey(used: Set<string>): string {
   return key;
 }
 
-/** The block height that shows the whole diagram. */
-async function blockHeight(source: string): Promise<number> {
+type Block = {height: number; settings: {source: string} & Partial<Rendered>};
+
+/**
+ * Renders one block in both themes. The widget shows the stored SVG, so readers do not load the
+ * engine. The height is the block height that shows the whole diagram.
+ */
+async function prepareBlock(source: string): Promise<Block> {
   try {
-    const svg = await renderSvg(source, false);
-    return Math.ceil(Number(/height="(\d+(?:\.\d+)?)"/.exec(svg)?.[1] ?? ERROR_HEIGHT)) + VERTICAL_PADDING;
+    const rendered = await renderBoth(source);
+    const height = Number(/height="(\d+(?:\.\d+)?)"/.exec(rendered.svg)?.[1] ?? ERROR_HEIGHT);
+    return {height: Math.ceil(height) + VERTICAL_PADDING, settings: {source, ...rendered}};
   } catch {
-    return ERROR_HEIGHT;
+    // Without stored SVG the widget renders the source when it is shown and displays the error.
+    return {height: ERROR_HEIGHT, settings: {source}};
   }
 }
 
-/** Replaces the code blocks with diagram widgets in one update. */
-async function convert(): Promise<void> {
+/** Replaces the code blocks with diagram widgets in one update. Returns the result for the user. */
+async function convert(): Promise<string> {
   const {text} = await readEntity();
   const sources = findBlocks(text);
   if (sources.length === 0) {
-    return;
+    return 'No PlantUML code blocks to convert';
   }
   const widget = await diagramWidget();
-  const heights = [];
-  for (const source of sources) {
-    heights.push(await blockHeight(source));
-  }
-  // Somebody may have saved while the diagrams were rendering. The next load tries again.
+  // The engine runs renders one at a time on its own.
+  const blocks = await Promise.all(sources.map(prepareBlock));
+  // Somebody may have saved while the diagrams were rendering: do not overwrite that change.
   const current = await readEntity();
   if (current.text !== text) {
-    return;
+    throw new Error('The text changed during the conversion. Try again.');
   }
   const used = new Set(current.embeddings.map(embedding => embedding.key));
-  const added = sources.map(source => ({
+  const added = blocks.map(block => ({
     $type: embeddingType,
     key: newKey(used),
     widget: {id: widget.id},
-    settings: JSON.stringify({source})
+    settings: JSON.stringify(block.settings)
   }));
-  const newText = replaceBlocks(text, (_, index) => embedLine(widget.appName, added[index].key, heights[index]));
+  const newText = replaceBlocks(text, (_, index) => embedLine(widget.appName, added[index].key, blocks[index].height));
   await writeEntity(newText, [...keep(current.embeddings), ...added]);
+  return `Converted ${plural(blocks.length, 'code block')}`;
 }
 
-/** Replaces the diagram widgets with code blocks of their source. */
-async function revert(): Promise<void> {
+/** Replaces the diagram widgets with code blocks of their source. Returns the result for the user. */
+async function revert(): Promise<string> {
   const widget = await diagramWidget();
   const {text, embeddings} = await readEntity();
   const sources: Record<string, string> = {};
@@ -125,79 +127,69 @@ async function revert(): Promise<void> {
     }
   }
   const result = restoreWidgets(text, widget.appName, sources);
-  if (result.keys.length > 0) {
-    await writeEntity(result.text, keep(embeddings.filter(embedding => !result.keys.includes(embedding.key))));
+  if (result.keys.length === 0) {
+    return 'No PlantUML diagrams to revert';
   }
+  await writeEntity(result.text, keep(embeddings.filter(embedding => !result.keys.includes(embedding.key))));
+  return `Reverted ${plural(result.keys.length, 'diagram')} to code`;
 }
 
-async function load(): Promise<View> {
-  const [enabled, {text, embeddings}, widget] = await Promise.all([readEnabled(), readEntity(), diagramWidget()]);
+async function load(done?: string): Promise<View> {
+  const [{text, embeddings}, widget] = await Promise.all([readEntity(), diagramWidget()]);
   return {
     kind: 'ready',
-    enabled,
+    done,
     blocks: findBlocks(text).length,
     diagrams: embeddings.filter(embedding => embedding.widget?.id === widget.id).length
   };
 }
 
-const plural = (count: number, word: string) => `${count} PlantUML ${word}${count === 1 ? '' : 's'}`;
+function plural(count: number, word: string): string {
+  return `${count} PlantUML ${word}${count === 1 ? '' : 's'}`;
+}
+
+const failed = (e: Error): View => ({kind: 'failed', message: e?.message ?? String(e)});
+
+type Run = (text: string, action: () => Promise<string>) => void;
+
+const Ready: FC<{view: Extract<View, {kind: 'ready'}>; run: Run}> = ({view, run}) => {
+  const found = [
+    view.blocks > 0 && plural(view.blocks, 'code block'),
+    view.diagrams > 0 && plural(view.diagrams, 'diagram')
+  ].filter(Boolean).join(', ');
+  return (
+    <div className="menu">
+      {view.done && <span className="text">{view.done}</span>}
+      <span className="text">{found || 'No PlantUML code blocks or diagrams in the text'}</span>
+      {view.blocks > 0 && (
+        <Button primary onClick={() => run('Converting PlantUML code blocks…', convert)}>{'Convert to diagrams'}</Button>
+      )}
+      {view.diagrams > 0 && (
+        <Button onClick={() => run('Restoring PlantUML code blocks…', revert)}>{'Revert to code'}</Button>
+      )}
+    </div>
+  );
+};
 
 const AppComponent: FC = () => {
   const [view, setView] = useState<View>({kind: 'busy', text: ''});
 
-  const run = useCallback((text: string, action: () => Promise<unknown>) => {
+  const run = useCallback<Run>((text, action) => {
     setView({kind: 'busy', text});
-    action().then(load).then(setView, (e: Error) => setView({kind: 'failed', message: e?.message ?? String(e)}));
+    action().then(load).then(setView, e => setView(failed(e)));
   }, []);
 
   useEffect(() => {
-    load().then(current => {
-      const auto = current.kind === 'ready' && current.enabled && current.blocks > 0 && !YTApp.entity?.isEditing;
-      return auto ? run('Converting PlantUML code blocks…', convert) : setView(current);
-    }, (e: Error) => setView({kind: 'failed', message: e?.message ?? String(e)}));
-  }, [run]);
-
-  const enable = () => run('Converting PlantUML code blocks…', async () => {
-    await writeEnabled(true);
-    await convert();
-  });
-  // Turn conversion off first, so the next load does not convert the restored blocks again.
-  const restore = () => run('Restoring PlantUML code blocks…', async () => {
-    await writeEnabled(false);
-    await revert();
-  });
+    load().then(setView, e => setView(failed(e)));
+  }, []);
 
   if (view.kind === 'busy') {
-    return <div className="line"><span className="text">{view.text}</span></div>;
+    return <div className="menu"><span className="text">{view.text}</span></div>;
   }
   if (view.kind === 'failed') {
-    return <div className="line"><span className="text error" title={view.message}>{`PlantUML: ${view.message}`}</span></div>;
+    return <div className="menu"><span className="text error">{`PlantUML: ${view.message}`}</span></div>;
   }
-  if (view.enabled) {
-    return (
-      <div className="line">
-        <span className="text">{'PlantUML code blocks become diagrams on save'}</span>
-        {view.diagrams > 0 && <Button text inline onClick={restore}>{'Revert to code'}</Button>}
-      </div>
-    );
-  }
-  if (view.blocks > 0) {
-    return (
-      <div className="line">
-        <span className="text">{plural(view.blocks, 'code block')}</span>
-        <Button text inline onClick={enable}>{'Convert to diagrams'}</Button>
-      </div>
-    );
-  }
-  if (view.diagrams > 0) {
-    return (
-      <div className="line">
-        <span className="text">{plural(view.diagrams, 'diagram')}</span>
-        <Button text inline onClick={restore}>{'Revert to code'}</Button>
-      </div>
-    );
-  }
-  return null;
+  return <Ready view={view} run={run}/>;
 };
 
 export const App = memo(AppComponent);

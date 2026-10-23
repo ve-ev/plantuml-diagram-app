@@ -5,6 +5,9 @@ import ButtonSet from '@jetbrains/ring-ui-built/components/button-set/button-set
 import Input, {Size} from '@jetbrains/ring-ui-built/components/input/input';
 import Text from '@jetbrains/ring-ui-built/components/text/text';
 import {Diagram} from './diagram';
+import {useDark} from './use-dark';
+import {renderBoth, renderSvg} from './plantuml';
+import type {Rendered} from './plantuml';
 
 const PREVIEW_DELAY_MS = 400;
 
@@ -12,7 +15,7 @@ type Props = {
   initialSource: string;
   canCancel: boolean;
   host: {enterConfigMode: () => void; exitConfigMode: () => void};
-  onSave: (source: string) => Promise<void>;
+  onSave: (source: string, rendered: Rendered) => Promise<void>;
   onCancel: () => void;
 };
 
@@ -21,7 +24,9 @@ type Props = {
  */
 const EditorComponent: FC<Props> = ({initialSource, canCancel, host, onSave, onCancel}) => {
   const [source, setSource] = useState(initialSource);
-  const [preview, setPreview] = useState(initialSource);
+  // The preview renders the current theme only; saving renders the other one if it is not cached.
+  const [preview, setPreview] = useState<{source: string; svg?: string; error?: string} | null>(null);
+  const dark = useDark();
   const [height, setHeight] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -31,14 +36,27 @@ const EditorComponent: FC<Props> = ({initialSource, canCancel, host, onSave, onC
   }, [host]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setPreview(source), PREVIEW_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [source]);
+    if (!source.trim()) {
+      return undefined;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => renderSvg(source, dark).then(
+      svg => !cancelled && setPreview({source, svg}),
+      (e: Error) => !cancelled && setPreview({source, error: e.message})
+    ), PREVIEW_DELAY_MS);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [source, dark]);
 
   const save = async () => {
     setSaving(true);
     try {
-      await onSave(source);
+      // Renders only what the preview and the stored diagram do not have yet.
+      await onSave(source, await renderBoth(source));
+    } catch (e) {
+      setPreview({source, error: (e as Error).message});
     } finally {
       setSaving(false);
     }
@@ -57,7 +75,8 @@ const EditorComponent: FC<Props> = ({initialSource, canCancel, host, onSave, onC
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSource(e.target.value)}
       />
       <div className="editor-preview">
-        {preview.trim() && <Diagram source={preview} onSize={size => setHeight(size.height)}/>}
+        {preview?.svg && <Diagram svg={preview.svg} onSize={size => setHeight(size.height)}/>}
+        {preview?.error && <pre className="diagram-error">{preview.error}</pre>}
       </div>
       {height !== null && (
         <Text info size="s">
@@ -72,4 +91,4 @@ const EditorComponent: FC<Props> = ({initialSource, canCancel, host, onSave, onC
   );
 };
 
-export const Editor = memo(EditorComponent);
+export default memo(EditorComponent);

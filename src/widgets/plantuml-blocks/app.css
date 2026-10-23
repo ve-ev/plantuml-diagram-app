@@ -7,18 +7,15 @@ body {
   color: var(--ring-text-color);
 }
 
-/* One line: the panel must not push the description down. */
-.line {
+.menu {
   display: flex;
-  align-items: baseline;
-  gap: calc(var(--ring-unit) * 1.5);
-  white-space: nowrap;
-  overflow: hidden;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ring-unit);
+  padding: calc(var(--ring-unit) * 2);
 }
 
 .text {
-  overflow: hidden;
-  text-overflow: ellipsis;
   color: var(--ring-secondary-color);
 }
 
