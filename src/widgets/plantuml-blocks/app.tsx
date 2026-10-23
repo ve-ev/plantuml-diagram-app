@@ -12,6 +12,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import type {FC} from 'react';
 import Button from '@jetbrains/ring-ui-built/components/button/button';
 import {DIAGRAM_WIDGET, embedLine, findBlocks, replaceBlocks, restoreWidgets} from '../plantuml-app/blocks';
+import {splitDiagrams} from '../plantuml-app/lines';
 import {renderBoth} from '../plantuml-app/plantuml';
 import type {Settings} from '../plantuml-app/plantuml';
 
@@ -91,13 +92,14 @@ async function prepareBlock(source: string): Promise<Block> {
 /** Replaces the code blocks with diagram widgets in one update. Returns the result for the user. */
 async function convert(): Promise<string> {
   const {text} = await readEntity();
-  const sources = findBlocks(text);
-  if (sources.length === 0) {
+  // One widget for each diagram of a code block.
+  const diagrams = findBlocks(text).map(splitDiagrams);
+  if (diagrams.length === 0) {
     return 'No PlantUML code blocks to convert';
   }
   const widget = await diagramWidget();
   // The engine runs renders one at a time on its own.
-  const blocks = await Promise.all(sources.map(prepareBlock));
+  const blocks = await Promise.all(diagrams.flat().map(prepareBlock));
   // Somebody may have saved while the diagrams were rendering: do not overwrite that change.
   const current = await readEntity();
   if (current.text !== text) {
@@ -110,9 +112,12 @@ async function convert(): Promise<string> {
     widget: {id: widget.id},
     settings: JSON.stringify(block.settings)
   }));
-  const newText = replaceBlocks(text, (_, index) => embedLine(widget.appName, added[index].key, blocks[index].height));
+  let next = 0;
+  const newText = replaceBlocks(text, (_, index) => diagrams[index].
+    map(() => embedLine(widget.appName, added[next].key, blocks[next++].height)).
+    join('\n\n'));
   await writeEntity(newText, [...keep(current.embeddings), ...added]);
-  return `Converted ${plural(blocks.length, 'code block')}`;
+  return `Converted ${plural(diagrams.length, 'code block')}`;
 }
 
 /** Replaces the diagram widgets with code blocks of their source. Returns the result for the user. */

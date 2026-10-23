@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {diagramKey, parseError, toLines} from './lines.ts';
+import {diagramKey, parseError, splitDiagrams, toLines} from './lines.ts';
 
 test('wraps a bare diagram in @startuml / @enduml', () => {
   assert.deepEqual(toLines('A -> B\r\nB -> A'), ['@startuml', 'A -> B', 'B -> A', '@enduml']);
@@ -32,4 +32,14 @@ test('keeps line breaks, blank lines and indentation inside the diagram', () => 
   assert.notEqual(diagramKey('A -> B\nB -> A'), diagramKey('A -> B B -> A'));
   assert.notEqual(diagramKey('note: a\n\nb'), diagramKey('note: a\nb'));
   assert.notEqual(diagramKey('* a\n  * b'), diagramKey('* a\n* b'));
+});
+
+test('splits a source into one part for each @start… diagram', () => {
+  assert.deepEqual(splitDiagrams('\n@startuml\nA -> B\n@enduml\n\n@startmindmap\n* a\n@endmindmap\n'),
+    ['@startuml\nA -> B\n@enduml', '@startmindmap\n* a\n@endmindmap']);
+});
+
+test('keeps a source with one diagram or without @start… as one part', () => {
+  assert.deepEqual(splitDiagrams('A -> B\nB -> A'), ['A -> B\nB -> A']);
+  assert.deepEqual(splitDiagrams('title x\n@startuml\nA -> B\n@enduml'), ['title x\n@startuml\nA -> B\n@enduml']);
 });
