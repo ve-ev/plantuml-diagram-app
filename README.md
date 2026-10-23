@@ -57,8 +57,9 @@ The app can also replace ` ```plantuml ` code blocks with diagrams, as in GitLab
 - **The app changes the text only when a user selects an action** in this item:
   - **Convert to diagrams** replaces each ` ```plantuml ` code block in the description or the
     content with a diagram widget. The widget keeps the source and the rendered diagram, and the
-    block height fits the diagram.
-  - **Revert to code** replaces the diagram widgets with code blocks again.
+    block height fits the diagram. A code block with several `@start…` / `@end…` diagrams becomes
+    one widget for each diagram.
+  - **Revert to code** replaces each diagram widget with a code block again.
   - The change is made on behalf of the user who selects the action. The activity stream shows
     it as a change of the description.
 - The app does not change comments, and it does not change code blocks inside other code blocks.

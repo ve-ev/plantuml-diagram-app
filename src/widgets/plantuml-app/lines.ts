@@ -43,3 +43,22 @@ export function parseError(svg: string): {line: number; message: string} | null 
     join(' ');
   return {line: Number(line[1]), message: message || 'Syntax error'};
 }
+
+/**
+ * The engine renders only the first `@start…` diagram of a source. Splits the source before each
+ * other `@start…` line, so that each diagram gets its own widget. Text between diagrams stays in
+ * the diagram before it; only blank lines around a diagram are removed.
+ */
+export function splitDiagrams(source: string): string[] {
+  const parts: string[][] = [[]];
+  let started = false;
+  for (const line of source.split('\n')) {
+    const start = line.trim().startsWith('@start');
+    if (start && started) {
+      parts.push([]);
+    }
+    started ||= start;
+    parts[parts.length - 1].push(line);
+  }
+  return parts.map(part => part.join('\n').replace(/^\n+|\n+$/g, ''));
+}
